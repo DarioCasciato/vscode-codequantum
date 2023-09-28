@@ -1,26 +1,58 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import { StatusBarAlignment, StatusBarItem, window, workspace } from 'vscode';
+import { countFileLines } from './fileCounter';
+import { getLineCountInWorkspace } from './workspaceCounters';
+
+let statusBarItem: StatusBarItem;
+
+// updates the status bar item
+function updateStatusBar(codeLinesFile: number, codeLinesWorkspace: number): void
+{
+    if (!statusBarItem)
+    {
+        statusBarItem = window.createStatusBarItem(StatusBarAlignment.Right, 101);
+    }
+
+    statusBarItem.text = `F: ${codeLinesFile} | W: ${codeLinesWorkspace}`;
+    statusBarItem.tooltip = `File lines: ${codeLinesFile} | Workspace lines: ${codeLinesWorkspace}`;
+    statusBarItem.show();
+    console.log('Updating status bar');
+}
 
 // This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+export function activate(context: vscode.ExtensionContext)
+{
+    console.log('Activating extension');
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "codequantum" is now active!');
+    if (window.activeTextEditor)
+    {
+        updateStatusBar(
+            countFileLines(window.activeTextEditor.document),
+            getLineCountInWorkspace()
+        );
+    }
+    else
+    {
+        updateStatusBar(0, getLineCountInWorkspace());
+    }
+    statusBarItem.show();
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('codequantum.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from CodeQuantum!');
-	});
+    // bind to onChangeActiveTextEditor event to update the status bar item
+    workspace.onDidChangeTextDocument(event =>
+    {
+        updateStatusBar(
+			countFileLines(event.document),
+			getLineCountInWorkspace()
+		);
+    });
 
-	context.subscriptions.push(disposable);
 }
 
 // This method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate()
+{
+    if (statusBarItem)
+    {
+        statusBarItem.dispose();
+    }
+}

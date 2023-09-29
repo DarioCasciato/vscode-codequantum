@@ -48,13 +48,20 @@ export function activate(context: vscode.ExtensionContext)
     console.log('CodeQuantum is now active!');
 
 
-    // bind to onChangeActiveTextEditor event to update the status bar item
+    // bind to onDidChangeTextDocument event to update the status bar item
     workspace.onDidChangeTextDocument(event =>
     {
         updateStatusBar(
 			countFileLines(event.document),
 			getLineCountInWorkspace()
 		);
+    });
+
+    // bind to onChangeActiveTextEditor event to update the status bar item
+    window.onDidChangeActiveTextEditor(editor => {
+        if (editor) {
+            updateStatusBar(countFileLines(editor.document), getLineCountInWorkspace());
+        }
     });
 
     // Listen for Configuration Changes

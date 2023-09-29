@@ -46,7 +46,18 @@ export function countLinesInFolder(folderPath: string): number {
             if (allowedExtensions.includes(ext)) {
                 const content = fs.readFileSync(filePath, 'utf-8');
                 const lines = content.split('\n').length;
-                totalLines += lines;
+                // if file is not the active file, add lines to total
+                if(window.activeTextEditor)
+                {
+                    if(window.activeTextEditor.document.fileName !== filePath)
+                    {
+                        totalLines += lines;
+                    }
+                }
+                else
+                {
+                    totalLines += lines;
+                }
             }
         }
     }

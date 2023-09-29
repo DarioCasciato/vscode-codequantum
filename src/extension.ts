@@ -17,40 +17,35 @@ function updateStatusBar(codeLinesFile: number, codeLinesWorkspace: number): voi
     if (!statusBarItem)
     {
         let alignment = getStatusBarAlignment();
-        if (alignment === StatusBarAlignment.Left)
-        {
+
+        if (alignment == StatusBarAlignment.Left)
             statusBarItem = window.createStatusBarItem(alignment, 500);
-        }
         else
-        {
             statusBarItem = window.createStatusBarItem(alignment, 101);
-        }
     }
 
-    statusBarItem.text = `Lines  F: ${codeLinesFile} | W: ${codeLinesWorkspace}`;
+    statusBarItem.text = `F: ${codeLinesFile} | W: ${codeLinesWorkspace}`;
     statusBarItem.tooltip = `File lines: ${codeLinesFile} | Workspace lines: ${codeLinesWorkspace}`;
     statusBarItem.show();
-    console.log('Updating status bar');
 }
 
 // This method is called when your extension is activated
 export function activate(context: vscode.ExtensionContext)
 {
-    console.log('Activating extension');
-
     if (window.activeTextEditor)
     {
         updateStatusBar(
             countFileLines(window.activeTextEditor.document),
             getLineCountInWorkspace()
-        );
-    }
-    else
-    {
+            );
+        }
+        else
+        {
         updateStatusBar(0, getLineCountInWorkspace());
     }
     statusBarItem.show();
 
+    console.log('CodeQuantum is now active!');
 
 
     // bind to onChangeActiveTextEditor event to update the status bar item
@@ -64,27 +59,31 @@ export function activate(context: vscode.ExtensionContext)
 
     // Listen for Configuration Changes
     workspace.onDidChangeConfiguration(event =>
-    {
-        if (event.affectsConfiguration('codequantum.statusBarAlignment'))
         {
-            if (statusBarItem)
+            if (event.affectsConfiguration('codequantum.statusBarAlignment'))
             {
-                statusBarItem.dispose();
-            }
+                let alignment = getStatusBarAlignment();
 
-            if(window.activeTextEditor)
-            {
-                updateStatusBar(
-                    countFileLines(window.activeTextEditor.document),
-                    getLineCountInWorkspace()
-                );
+                if (statusBarItem) statusBarItem.dispose();
+
+                if (alignment == StatusBarAlignment.Left)
+                    statusBarItem = window.createStatusBarItem(alignment, 500);
+                else
+                    statusBarItem = window.createStatusBarItem(alignment, 101);
+
+                if(window.activeTextEditor)
+                {
+                    updateStatusBar(
+                        countFileLines(window.activeTextEditor.document),
+                        getLineCountInWorkspace()
+                    );
+                }
+                else
+                {
+                    updateStatusBar(0, getLineCountInWorkspace());
+                }
             }
-            else
-            {
-                updateStatusBar(0, getLineCountInWorkspace());
-            }
-        }
-    });
+        });
 
 }
 

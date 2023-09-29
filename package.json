@@ -20,7 +20,7 @@
         "type": "object",
         "title": "CodeQuantum",
         "properties": {
-            "CodeQuantum.statusBarAlignment": {
+            "codequantum.statusBarAlignment": {
                 "type": "string",
                 "enum": ["left", "right"],
                 "default": "right",

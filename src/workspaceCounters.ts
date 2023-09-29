@@ -76,6 +76,5 @@ export function getLineCountInWorkspace(): number
         totalLines += countFileLines(window.activeTextEditor.document);
     }
 
-    console.log('Counting workspace lines');
     return totalLines;
 }

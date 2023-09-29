@@ -29,7 +29,7 @@ function updateStatusBar(codeLinesFile: number, codeLinesWorkspace: number): voi
     statusBarItem.show();
 }
 
-// This method is called when your extension is activated
+// called when the extension is activated
 export function activate(context: vscode.ExtensionContext)
 {
     if (window.activeTextEditor)

@@ -2,7 +2,10 @@
   "name": "codequantum",
   "displayName": "CodeQuantum",
   "description": "Quickly count lines in files and workspaces. Know your code at a glance",
-  "version": "0.0.1",
+  "repository": "https://github.com/DarioCasciato/vscode-codequantum.git",
+  "icon": "img/icon.png",
+  "publisher": "DarioCas",
+  "version": "1.0.0",
   "engines": {
     "vscode": "^1.82.0"
   },

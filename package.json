@@ -5,7 +5,7 @@
   "repository": "https://github.com/DarioCasciato/vscode-codequantum.git",
   "icon": "img/icon.png",
   "publisher": "DarioCas",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "engines": {
     "vscode": "^1.82.0"
   },
@@ -15,25 +15,21 @@
   "activationEvents": [
     "onStartupFinished",
     "onTextDocumentChanged",
-    "onTextDocumentOpened",
-    "onDidChangeActiveTextEditor"
+    "onTextDocumentOpened"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "configuration": {
-      "type": "object",
-      "title": "CodeQuantum",
-      "properties": {
-        "codequantum.statusBarAlignment": {
-          "type": "string",
-          "enum": [
-            "left",
-            "right"
-          ],
-          "default": "right",
-          "description": "Choose where the counter should be displayed in the status bar."
+        "type": "object",
+        "title": "CodeQuantum",
+        "properties": {
+            "codequantum.statusBarAlignment": {
+                "type": "string",
+                "enum": ["left", "right"],
+                "default": "right",
+                "description": "Choose where the counter should be displayed in the status bar."
+            }
         }
-      }
     }
   },
   "scripts": {

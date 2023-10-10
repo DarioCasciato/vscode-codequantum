@@ -82,10 +82,5 @@ export function getLineCountInWorkspace(): number
         totalLines += countLinesInFolder(folderPath);
     }
 
-    if (window.activeTextEditor)
-    {
-        totalLines += countFileLines(window.activeTextEditor.document);
-    }
-
     return totalLines;
 }

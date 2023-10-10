@@ -5,23 +5,17 @@ import { getLineCountInWorkspace } from './workspaceCounters';
 
 let statusBarItem: StatusBarItem;
 
-function getStatusBarAlignment(): StatusBarAlignment
-{
-    let alignmentSetting = vscode.workspace.getConfiguration('codequantum').get<string>('statusBarAlignment');
+// Get the status bar alignment from the configuration
+function getStatusBarAlignment(): StatusBarAlignment {
+    let alignmentSetting = vscode.workspace.getConfiguration('codequantum').get<string>('statusBarAlignment') ?? 'right';
     return alignmentSetting === 'left' ? StatusBarAlignment.Left : StatusBarAlignment.Right;
 }
 
-// updates the status bar item
-function updateStatusBar(codeLinesFile: number, codeLinesWorkspace: number): void
-{
-    if (!statusBarItem)
-    {
+// Update the status bar item with the file and workspace line counts
+function updateStatusBar(codeLinesFile: number, codeLinesWorkspace: number): void {
+    if (!statusBarItem) {
         let alignment = getStatusBarAlignment();
-
-        if (alignment == StatusBarAlignment.Left)
-            statusBarItem = window.createStatusBarItem(alignment, 500);
-        else
-            statusBarItem = window.createStatusBarItem(alignment, 101);
+        statusBarItem = window.createStatusBarItem(alignment, alignment === StatusBarAlignment.Left ? 500 : 101);
     }
 
     statusBarItem.text = `F: ${codeLinesFile} | W: ${codeLinesWorkspace}`;
@@ -29,69 +23,97 @@ function updateStatusBar(codeLinesFile: number, codeLinesWorkspace: number): voi
     statusBarItem.show();
 }
 
-// called when the extension is activated
+
+// Called when the extension is activated
 export function activate(context: vscode.ExtensionContext)
 {
-    if (window.activeTextEditor)
+    let workspaceLineCount = getLineCountInWorkspace();
+
+    // Update the status bar
+    function updateEditorLines()
     {
-        updateStatusBar(
-            countFileLines(window.activeTextEditor.document),
-            getLineCountInWorkspace()
+        let activeEditor = window.activeTextEditor;
+        workspaceLineCount = getLineCountInWorkspace();
+        if (activeEditor)
+        {
+            updateStatusBar(
+                countFileLines(activeEditor.document),
+                (workspaceLineCount + countFileLines(activeEditor.document))
             );
         }
         else
         {
-        updateStatusBar(0, getLineCountInWorkspace());
+            updateStatusBar(0, workspaceLineCount);
+        }
     }
-    statusBarItem.show();
+
+    // Update the status bar for the active editor
+    updateEditorLines();
 
     console.log('CodeQuantum is now active!');
 
-
-    // bind to onChangeActiveTextEditor event to update the status bar item
+    // Update the status bar when the active editor changes
     workspace.onDidChangeTextDocument(event =>
     {
         updateStatusBar(
-			countFileLines(event.document),
-			getLineCountInWorkspace()
-		);
+            countFileLines(event.document),
+            workspaceLineCount + countFileLines(event.document)
+        );
     });
 
-    // Listen for Configuration Changes
-    workspace.onDidChangeConfiguration(event =>
+    // Update the status bar when a new file is created, deleted, or renamed
+    workspace.onDidCreateFiles(event =>
+    {
+        updateEditorLines();
+    });
+    workspace.onDidDeleteFiles(event =>
+    {
+        updateEditorLines();
+    });
+    workspace.onDidRenameFiles(event =>
+    {
+        updateEditorLines();
+    });
+
+    // Update the status bar when a file is saved
+    workspace.onDidSaveTextDocument(event =>
+    {
+        updateEditorLines();
+    });
+
+    window.onDidChangeActiveTextEditor(event =>
+    {
+        updateEditorLines();
+    });
+
+    // Update the status bar when the configuration changes
+    workspace.onDidChangeConfiguration(event => {
+        if (event.affectsConfiguration('codequantum.statusBarAlignment'))
         {
-            if (event.affectsConfiguration('codequantum.statusBarAlignment'))
+            let alignment = getStatusBarAlignment();
+
+            if (statusBarItem)
             {
-                let alignment = getStatusBarAlignment();
-
-                if (statusBarItem) statusBarItem.dispose();
-
-                if (alignment == StatusBarAlignment.Left)
-                    statusBarItem = window.createStatusBarItem(alignment, 500);
-                else
-                    statusBarItem = window.createStatusBarItem(alignment, 101);
-
-                if(window.activeTextEditor)
-                {
-                    updateStatusBar(
-                        countFileLines(window.activeTextEditor.document),
-                        getLineCountInWorkspace()
-                    );
-                }
-                else
-                {
-                    updateStatusBar(0, getLineCountInWorkspace());
-                }
+                statusBarItem.dispose();
             }
-        });
 
+            if (alignment == StatusBarAlignment.Left)
+            {
+                statusBarItem = window.createStatusBarItem(alignment, 500);
+            }
+            else
+            {
+                statusBarItem = window.createStatusBarItem(alignment, 101);
+            }
+
+            updateEditorLines();
+        }
+    });
 }
 
-// This method is called when your extension is deactivated
+
+// Called when the extension is deactivated
 export function deactivate()
 {
-    if (statusBarItem)
-    {
-        statusBarItem.dispose();
-    }
+    statusBarItem?.dispose();
 }

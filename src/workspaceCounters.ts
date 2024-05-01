@@ -7,6 +7,7 @@ import * as path from 'path';
 import { allowedExtensions } from './languages';
 import { countFileLines } from './fileCounter';
 import ignore from 'ignore';
+import { minimatch } from 'minimatch';
 
 
 function getGitIgnoreRules(folderPath: string) {
@@ -21,47 +22,45 @@ function getGitIgnoreRules(folderPath: string) {
     return ig;
 }
 
+// Function to get the current configuration for 'codequantum'
+function getConfiguration() {
+    // This will fetch the settings from the workspace configuration
+    const config = workspace.getConfiguration('codequantum');
+    const excludePatterns = config.get<string[]>('excludePatterns', []);
+    return {
+        excludePatterns
+    };
+}
 
 
 // The countLinesInFolder function counts the number of lines in a folder.
-export function countLinesInFolder(folderPath: string): number {
+export function countLinesInFolder(folderPath: string, baseFolderPath?: string): number {
     let totalLines = 0;
-    const ig = getGitIgnoreRules(folderPath);
+    const ig = getGitIgnoreRules(baseFolderPath || folderPath);
+    const config = getConfiguration();  // Fetch workspace configuration
 
     const files = fs.readdirSync(folderPath);
     for (const file of files) {
-        const filePath = path.join(folderPath, file); // Use path.join for more reliable path joining
+        const filePath = path.join(folderPath, file);
+        const relativePath = baseFolderPath ? path.relative(baseFolderPath, filePath) : file;
 
-        if (ig.ignores(file)) { // Check if the file/folder should be ignored
+        // Check against .gitignore rules and exclude patterns from the workspace settings
+        if (ig.ignores(relativePath) || config.excludePatterns.some(pattern => minimatch(relativePath, pattern))) {
             continue;
         }
 
         const stats = fs.statSync(filePath);
-
         if (stats.isDirectory()) {
-            totalLines += countLinesInFolder(filePath);
+            totalLines += countLinesInFolder(filePath, baseFolderPath || folderPath);
         } else if (stats.isFile()) {
             const ext = path.extname(file);
-
             if (allowedExtensions.includes(ext)) {
                 const content = fs.readFileSync(filePath, 'utf-8');
                 const lines = content.split('\n').length;
-                // if file is not the active file, add lines to total
-                if(window.activeTextEditor)
-                {
-                    if(window.activeTextEditor.document.fileName !== filePath)
-                    {
-                        totalLines += lines;
-                    }
-                }
-                else
-                {
-                    totalLines += lines;
-                }
+                totalLines += lines;
             }
         }
     }
-
     return totalLines;
 }
 

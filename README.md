@@ -8,10 +8,23 @@ The CodeQuantum extension lets you have an insight of the number of lines of cod
 - Display the number of lines of code in the status bar
 - You can change the alignment of the status bar item in the extension settings
 - The counter excludes files that are listed in .gitignore, .vscodeignore and .ignore files
+- Provides the ability to specify additional exclude patterns directly in `settings.json`
 
 <img src="./img/img1.png" width="300">
 <br/><br/>
 <img src="img/img2.png" width="400">
+
+
+### exclude files with settings.json
+
+```json
+{
+    "codequantum.excludePatterns": [
+        "directories/to/ignore/**",
+        "files/to/ignore/**"
+    ]
+}
+```
 
 
 ## Repository

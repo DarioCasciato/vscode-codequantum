@@ -38,3 +38,5 @@ This extension is released under the [MIT License](LICENSE).
 ## Credits
 
 This extension was developed by [Dario Casciato](https://github.com/DarioCasciato/).
+
+[Buy me a espresso](https://buymeacoffee.com/dcasciato0s)
